@@ -8,6 +8,10 @@ my $modelfilehandle;
 my $modeljsonstring;
 my $modeljsonobject;
 
+sub usage {
+	die "usage: " . basename($0) . " <add|exit|tag|list|search> [<..>]";
+}
+
 sub add {
 	my $url = shift;
 	my $entryname;
@@ -175,6 +179,9 @@ sub untag {
 	}
 }
 
+if (@ARGV < 2) {
+	usage();
+}
 if (! -d $ENV{'HOME'} . "/.bookkeepr") {
 	mkdir($ENV{'HOME'} . "/.bookkeepr");
 }

@@ -25,7 +25,7 @@ sub add {
 	$filename = sanitizefilename($entryname);
 	$filename = $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $filename;
 	if (-f $filename) {
-		print "E: did you mean edit\n";
+		die "E: did you mean edit";
 	} else {
 		$jsonobject{'url'} = $url;
 		@entrytaglist = classifyname($entryname, $modeljsonobject);
@@ -47,7 +47,7 @@ sub edit {
 	my $taglist;
 	$filename = shift;
 	if (! -f $filename) {
-		print "E: did you mean add\n";
+		die "E: did you mean add";
 	}
 	open($filehandle, "<" . $filename);
 	$jsonstring = "";
@@ -208,7 +208,7 @@ if ($ARGV[0] eq "add") {
 	if (defined($ARGV[1])) {
 		add($ARGV[1]);
 	} else {
-		print "E: no URL specified\n";
+		die "E: no URL specified";
 	}
 } else {
 	if ($ARGV[0] eq "edit") {

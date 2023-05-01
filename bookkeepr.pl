@@ -57,10 +57,35 @@ sub subscribe {
 
 sub sync {
 	my $directorypath;
+	my $filename;
+	my $filehandle;
+	my $jsonstring;
+	my $jsonobject;
 	for $directorypath (glob($ENV{'HOME'} . "/.bookkeepr/bookmarks/*")) {
 		$directorypath = validatefilename($directorypath);
+		for $filename (glob($directorypath . "/*")) {
+			open($filehandle, "<" . $filename);
+			$jsonstring = "";
+			while (<$filehandle>) {
+				$jsonstring .= $_;
+			}
+			close($filehandle);
+			$jsonobject = decode_json($jsonstring);
+			untag($jsonobject->{'tags'}, $filename);
+		}
 		system("git", "pull", $directorypath);
 		system("git", "push", $directorypath);
+		for $filename (glob($directorypath . "/*")) {
+			open($filehandle, "<" . $filename);
+			$jsonstring = "";
+			while (<$filehandle>) {
+				$jsonstring .= $_;
+			}
+			close($filehandle);
+			$jsonobject = decode_json($jsonstring);
+			tag($jsonobject->{'tags'}, $filename);
+		}
+		
 	}
 }
 

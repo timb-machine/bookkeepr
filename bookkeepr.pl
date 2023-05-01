@@ -67,7 +67,7 @@ sub add {
 		print $filehandle to_json(\%jsonobject, {utf8 => 1, pretty => 1});
 		close($filehandle);
 	}
-	$taglist = textedit($filename);
+	($filename, $taglist) = textedit($filename);
 	tag($taglist, $filename);
 }
 
@@ -90,7 +90,7 @@ sub edit {
 	close($filehandle);
 	$jsonobject = decode_json($jsonstring);
 	untag($jsonobject->{'tags'}, $filename);
-	$taglist = textedit($filename);
+	($filename, $taglist) = textedit($filename);
 	tag($taglist, $filename);
 }
 
@@ -242,11 +242,13 @@ sub textedit {
 	$jsonobject = decode_json($jsonstring);
 	if ($jsonobject->{'name'} ne $entryname) {
 		$reponame = basename(dirname($filename));
+		$reponame = validatereponame($reponame);
 		$newfilename = sanitizefilename($jsonobject->{'name'});
+		$newfilename = validatefilename($newfilename);
 		rename($filename, $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $reponame . "/" . $newfilename);
 		$filename = $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $reponame . "/" . $newfilename;
 	}
-	return $jsonobject->{'tags'};
+	return ($filename, $jsonobject->{'tags'});
 }
 
 sub validateentrytag {

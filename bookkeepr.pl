@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/opt/pkg/bin/perl -w -T
 
 use strict;
 use JSON;
@@ -21,6 +21,7 @@ sub add {
 	my $filehandle;
 	my $taglist;
 	$url = shift;
+	$url = validateurl($url);
 	$entryname = $url;
 	$filename = sanitizefilename($entryname);
 	$filename = $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $filename;
@@ -46,6 +47,7 @@ sub edit {
 	my $jsonobject;
 	my $taglist;
 	$filename = shift;
+	$filename = validatefilename($filename);
 	if (! -f $filename) {
 		die "E: did you mean add";
 	}
@@ -59,6 +61,28 @@ sub edit {
 	untag($jsonobject->{'tags'}, $filename);
 	$taglist = textedit($filename);
 	tag($taglist, $filename);
+}
+
+sub validateurl {
+	my $url;
+	$url = shift;
+	if ($url =~ /(.*)/) {
+		$url = $1;
+	} else {
+		die "E: invalid URL";
+	}
+	return $url;
+}
+
+sub validatefilename {
+	my $filename;
+	$filename = shift;
+	if ($filename =~ /([\/A-Za-z0-9\-_\.]+)/) {
+		$filename = $1;
+	} else {
+		die "E: invalid filename";
+	}
+	return $filename;
 }
 
 sub sanitizefilename {
@@ -121,6 +145,7 @@ sub textedit {
 	my $entryname;
 	my $taggedcounter;
 	$filename = shift;
+	$filename = validatefilename($filename);
 	open($filehandle, "<" . $filename);
 	$jsonstring = "";
 	while (<$filehandle>) {
@@ -156,16 +181,22 @@ sub tag {
 	my $entrytag;
 	$taglist = shift;
 	$filename = shift;
+	$filename = validatefilename($filename);
 	$taggedcounter = 0;
 	foreach $entrytag (split(/, /, $taglist)) {
-		if (! -d $ENV{'HOME'} . "/.bookkeepr/" . $entrytag) {
-			mkdir($ENV{'HOME'} . "/.bookkeepr/" . $entrytag);
+		if ($entrytag =~ /([A-Za-z0-9\-_\.]+)/) {
+			$entrytag = $1;
+			if (! -d $ENV{'HOME'} . "/.bookkeepr/" . $entrytag) {
+				mkdir($ENV{'HOME'} . "/.bookkeepr/" . $entrytag);
+			}
+			symlink($ENV{'HOME'} . "/.bookkeepr/bookmarks/" . basename($filename), $ENV{'HOME'} . "/.bookkeepr/" . $entrytag . "/" . basename($filename));
+			$taggedcounter ++;
+		} else {
+			print "W: invalid tag\n";
 		}
-		symlink($ENV{'HOME'} . $filename, $ENV{'HOME'} . "/.bookkeepr/" . $entrytag . "/" . basename($filename));
-		$taggedcounter ++;
 	}
 	if ($taggedcounter == 0) {
-		symlink($filename, $ENV{'HOME'} . "/.bookkeepr/untagged/" . basename($filename));
+		symlink($ENV{'HOME'} . "/.bookkeepr/bookmarks/" . basename($filename), $ENV{'HOME'} . "/.bookkeepr/untagged/" . basename($filename));
 	}
 }
 
@@ -176,16 +207,28 @@ sub untag {
 	my $entrytag;
 	$taglist = shift;
 	$filename = shift;
+	$filename = validatefilename($filename);
 	$taggedcounter = 0;
 	foreach $entrytag (split(/, /, $taglist)) {
-		unlink($ENV{'HOME'} . "/.bookkeepr/" . $entrytag . "/" . basename($filename));
-		$taggedcounter ++;
+		if ($entrytag =~ /([A-Za-z0-9\-_\.]+)/) {
+			$entrytag = $1;
+			unlink($ENV{'HOME'} . "/.bookkeepr/" . $entrytag . "/" . basename($filename));
+			$taggedcounter ++;
+		} else {
+			print "W: invalid tag\n";
+		}
 	}
 	if ($taggedcounter == 0) {
 		unlink($ENV{'HOME'} . "/.bookkeepr/untagged/" . basename($filename));
 	}
 }
 
+if ($ENV{'HOME'} =~ /(.*)/) {
+	$ENV{'HOME'} = $1;
+}
+if ($ENV{'PATH'} =~ /(.*)/) {
+	$ENV{'PATH'} = $1;
+}
 if (! -d $ENV{'HOME'} . "/.bookkeepr") {
 	mkdir($ENV{'HOME'} . "/.bookkeepr");
 }

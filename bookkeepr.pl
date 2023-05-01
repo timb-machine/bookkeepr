@@ -9,10 +9,39 @@ my $modeljsonstring;
 my $modeljsonobject;
 
 sub usage {
-	die "usage: " . basename($0) . " <add|edit|tag|list|search> [<..>]";
+	die "usage: " . basename($0) . " init <reponame>|subscribe <repourl> <reponame>|sync|<add|edit|tag|list|search> <reponame> [<..>]";
+}
+
+sub init {
+	my $reponame;
+	$reponame = shift;
+	$reponame = validatereponame($reponame);
+	mkdir($ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $reponame);
+	system("git", "init", $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $reponame);
+}
+
+sub subscribe {
+	my $repourl;
+	my $reponame;
+	$repourl = shift;
+	$reponame = shift;
+	$repourl = validaterepourl($repourl);
+	$reponame = validatereponame($reponame);
+	mkdir($ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $reponame);
+	system("git", "clone", $repourl, $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $reponame);
+}
+
+sub sync {
+	my $directorypath;
+	for $directorypath (glob($ENV{'HOME'} . "/.bookkeepr/bookmarks/*")) {
+		$directorypath = validatereponame($directorypath);
+		system("git", "pull", $directorypath);
+		system("git", "push", $directorypath);
+	}
 }
 
 sub add {
+	my $reponame;
 	my $url;
 	my $entryname;
 	my @entrytaglist;
@@ -20,11 +49,13 @@ sub add {
 	my %jsonobject;
 	my $filehandle;
 	my $taglist;
+	$reponame = shift;
 	$url = shift;
+	$reponame = validatereponame($reponame);
 	$url = validateurl($url);
 	$entryname = $url;
 	$filename = sanitizefilename($entryname);
-	$filename = $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $filename;
+	$filename = $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $reponame . "/" . $filename;
 	if (-f $filename) {
 		die "E: did you mean edit";
 	} else {
@@ -61,6 +92,28 @@ sub edit {
 	untag($jsonobject->{'tags'}, $filename);
 	$taglist = textedit($filename);
 	tag($taglist, $filename);
+}
+
+sub validaterepourl {
+	my $repourl;
+	$repourl = shift;
+	if ($repourl =~ /(git@|http[s]*:\/\/)([A-Za-z0-9\-_\.:\/]+)/) {
+		$repourl = $1 . $2;
+	} else {
+		die "E: invalid repo URL";
+	}
+	return $repourl;
+}
+
+sub validatereponame {
+	my $reponame;
+	$reponame = shift;
+	if ($reponame =~ /([A-Za-z0-9\-_\.]+)/) {
+		$reponame = $1;
+	} else {
+		die "E: invalid repo name";
+	}
+	return $reponame;
 }
 
 sub validateurl {
@@ -141,6 +194,7 @@ sub textedit {
 	my $filehandle;
 	my $jsonstring;
 	my $jsonobject;
+	my $reponame;
 	my $newfilename;
 	my $entryname;
 	my $taggedcounter;
@@ -167,9 +221,10 @@ sub textedit {
 	close($filehandle);
 	$jsonobject = decode_json($jsonstring);
 	if ($jsonobject->{'name'} ne $entryname) {
+		$reponame = basename(dirname($filename));
 		$newfilename = sanitizefilename($jsonobject->{'name'});
-		rename($filename, $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $newfilename);
-		$filename = $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $newfilename;
+		rename($filename, $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $reponame . "/" . $newfilename);
+		$filename = $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $reponame . "/" . $newfilename;
 	}
 	return $jsonobject->{'tags'};
 }
@@ -177,11 +232,13 @@ sub textedit {
 sub tag {
 	my $taglist;
 	my $filename;
+	my $reponame;
 	my $taggedcounter;
 	my $entrytag;
 	$taglist = shift;
 	$filename = shift;
 	$filename = validatefilename($filename);
+	$reponame = basename(dirname($filename));
 	$taggedcounter = 0;
 	foreach $entrytag (split(/, /, $taglist)) {
 		if ($entrytag =~ /([A-Za-z0-9\-_\.]+)/) {
@@ -189,14 +246,14 @@ sub tag {
 			if (! -d $ENV{'HOME'} . "/.bookkeepr/" . $entrytag) {
 				mkdir($ENV{'HOME'} . "/.bookkeepr/" . $entrytag);
 			}
-			symlink($ENV{'HOME'} . "/.bookkeepr/bookmarks/" . basename($filename), $ENV{'HOME'} . "/.bookkeepr/" . $entrytag . "/" . basename($filename));
+			symlink($ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $reponame . "/" . basename($filename), $ENV{'HOME'} . "/.bookkeepr/" . $entrytag . "/" . basename($filename));
 			$taggedcounter ++;
 		} else {
 			print "W: invalid tag\n";
 		}
 	}
 	if ($taggedcounter == 0) {
-		symlink($ENV{'HOME'} . "/.bookkeepr/bookmarks/" . basename($filename), $ENV{'HOME'} . "/.bookkeepr/untagged/" . basename($filename));
+		symlink($ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $reponame . "/" . basename($filename), $ENV{'HOME'} . "/.bookkeepr/untagged/" . basename($filename));
 	}
 }
 
@@ -235,35 +292,57 @@ if (! -d $ENV{'HOME'} . "/.bookkeepr") {
 if (! -d $ENV{'HOME'} . "/.bookkeepr/bookmarks") {
 	mkdir($ENV{'HOME'} . "/.bookkeepr/bookmarks");
 }
-if (@ARGV < 2) {
+if (@ARGV < 1) {
 	usage();
 }
-if (-f $ENV{'HOME'} . "/.bookkeepr/model.json") {
-	open($modelfilehandle, "<" . $ENV{'HOME'} . "/.bookkeepr/model.json");
-	$modeljsonstring = "";
-	while (<$modelfilehandle>) {
-		$modeljsonstring .= $_;
-	}
-	close($modelfilehandle);
-	$modeljsonobject = decode_json($modeljsonstring);
-}
-if ($ARGV[0] eq "add") {
+if ($ARGV[0] eq "init") {
 	if (defined($ARGV[1])) {
-		add($ARGV[1]);
+		init($ARGV[1]);
 	} else {
-		die "E: no URL specified";
+		die "E: no reponame specified";
 	}
 } else {
-	if ($ARGV[0] eq "edit") {
-		if (defined($ARGV[1])) {
-			edit($ARGV[1]);
+	if ($ARGV[0] eq "subscribe") {
+		if (defined($ARGV[1]) && defined($ARGV[2])) {
+			subscribe($ARGV[1], $ARGV[2]);
+		} else {
+			die "E: no repo URL or repo name specified";
 		}
 	} else {
-		if ($ARGV[0] eq "tag") {
+		if ($ARGV[0] eq "sync") {
+			sync();
 		} else {
-			if ($ARGV[0] eq "list") {
+			if (-f $ENV{'HOME'} . "/.bookkeepr/model.json") {
+				open($modelfilehandle, "<" . $ENV{'HOME'} . "/.bookkeepr/model.json");
+				$modeljsonstring = "";
+				while (<$modelfilehandle>) {
+					$modeljsonstring .= $_;
+				}
+				close($modelfilehandle);
+				$modeljsonobject = decode_json($modeljsonstring);
+			}
+			if ($ARGV[0] eq "add") {
+				if (defined($ARGV[1]) && defined($ARGV[2])) {
+					add($ARGV[1], $ARGV[2]);
+				} else {
+					die "E: no repo name or URL specified";
+				}
 			} else {
-				if ($ARGV[0] eq "search") {
+				if ($ARGV[0] eq "edit") {
+					if (defined($ARGV[1])) {
+						edit($ARGV[1])
+					}
+				} else {
+					if ($ARGV[0] eq "tag") {
+					} else {
+						if ($ARGV[0] eq "list") {
+						} else {
+							if ($ARGV[0] eq "search") {
+							} else {
+								usage();
+							}
+						}
+					}
 				}
 			}
 		}

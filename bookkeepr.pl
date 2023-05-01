@@ -9,7 +9,7 @@ my $modeljsonstring;
 my $modeljsonobject;
 
 sub usage {
-	die "usage: " . basename($0) . " <add|exit|tag|list|search> [<..>]";
+	die "usage: " . basename($0) . " <add|edit|tag|list|search> [<..>]";
 }
 
 sub add {

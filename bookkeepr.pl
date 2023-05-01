@@ -182,7 +182,7 @@ sub untag {
 		$taggedcounter ++;
 	}
 	if ($taggedcounter == 0) {
-		unink($ENV{'HOME'} . "/.bookkeepr/untagged/" . basename($filename));
+		unlink($ENV{'HOME'} . "/.bookkeepr/untagged/" . basename($filename));
 	}
 }
 

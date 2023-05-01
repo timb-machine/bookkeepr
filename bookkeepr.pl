@@ -208,9 +208,9 @@ sub textedit {
 	$jsonobject = decode_json($jsonstring);
 	$entryname = $jsonobject->{'name'};
 	if (defined($ENV{'EDITOR'})) {
-		system($ENV{'EDITOR'} . " " . $filename);
+		system($ENV{'EDITOR'}, $filename);
 	} else {
-		system("vi " . $filename);
+		system("vi", $filename);
 	}
 	open($filehandle, "<" . $filename);
 	$jsonstring = "";

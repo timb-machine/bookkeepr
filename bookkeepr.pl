@@ -249,6 +249,17 @@ sub textedit {
 	return $jsonobject->{'tags'};
 }
 
+sub validateentrytag {
+	my $entrytag;
+	$entrytag = shift;
+	if ($entrytag =~ /([A-Za-z0-9\-_\.:]+)/) {
+		$entrytag = $1;
+	} else {
+		$entrytag = undef;
+	}
+	return $entrytag;
+}
+
 sub tag {
 	my $taglist;
 	my $filename;
@@ -261,8 +272,8 @@ sub tag {
 	$reponame = basename(dirname($filename));
 	$taggedcounter = 0;
 	foreach $entrytag (split(/, /, $taglist)) {
-		if ($entrytag =~ /([A-Za-z0-9\-_\.]+)/) {
-			$entrytag = $1;
+		$entrytag = validateentrytag($entrytag);
+		if (defined($entrytag)) {
 			if (! -d $ENV{'HOME'} . "/.bookkeepr/" . $entrytag) {
 				mkdir($ENV{'HOME'} . "/.bookkeepr/" . $entrytag);
 			}
@@ -287,8 +298,8 @@ sub untag {
 	$filename = validatefilename($filename);
 	$taggedcounter = 0;
 	foreach $entrytag (split(/, /, $taglist)) {
-		if ($entrytag =~ /([A-Za-z0-9\-_\.]+)/) {
-			$entrytag = $1;
+		$entrytag = validateentrytag($entrytag);
+		if (defined($entrytag)) {
 			unlink($ENV{'HOME'} . "/.bookkeepr/" . $entrytag . "/" . basename($filename));
 			$taggedcounter ++;
 		} else {

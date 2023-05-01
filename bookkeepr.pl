@@ -94,7 +94,7 @@ sub add {
 	my $url;
 	my $entryname;
 	my $filename;
-	my %jsonobject;
+	my $jsonobject;
 	my @entrytaglist;
 	my $filehandle;
 	my $taglist;
@@ -108,12 +108,12 @@ sub add {
 	if (-f $filename) {
 		die "E: did you mean edit";
 	} else {
-		$jsonobject{'url'} = $url;
+		$jsonobject->{'url'} = $url;
 		@entrytaglist = classifyname($entryname, $modeljsonobject);
-		$jsonobject{'name'} = $entryname;
-		$jsonobject{'tags'} = join(", ", @entrytaglist);
+		$jsonobject->{'name'} = $entryname;
+		$jsonobject->{'tags'} = join(", ", @entrytaglist);
 		open($filehandle, ">" . $filename);
-		print $filehandle to_json(\%jsonobject, {utf8 => 1, pretty => 1});
+		print $filehandle to_json($jsonobject, {utf8 => 1, pretty => 1});
 		close($filehandle);
 	}
 	($filename, $taglist) = textedit($filename);

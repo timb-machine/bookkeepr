@@ -34,7 +34,7 @@ sub subscribe {
 sub sync {
 	my $directorypath;
 	for $directorypath (glob($ENV{'HOME'} . "/.bookkeepr/bookmarks/*")) {
-		$directorypath = validatereponame($directorypath);
+		$directorypath = validatefilename($directorypath);
 		system("git", "pull", $directorypath);
 		system("git", "push", $directorypath);
 	}

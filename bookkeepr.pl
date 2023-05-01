@@ -9,7 +9,7 @@ my $modelfilehandle;
 my $modeljsonstring;
 
 sub usage {
-	die "usage: " . basename($0) . " init <reponame>|subscribe <repourl> <reponame>|sync|<add|edit|tag|list|search> <reponame> [<..>]";
+	die "usage: " . basename($0) . " init <reponame>|subscribe <repourl> <reponame>|sync|add <reponame> [<..>]|<edit|tag|list|search|remove> [<..>]";
 }
 
 sub init {
@@ -92,6 +92,27 @@ sub edit {
 	untag($jsonobject->{'tags'}, $filename);
 	$taglist = textedit($filename);
 	tag($taglist, $filename);
+}
+
+sub remove {
+	my $filename;
+	my $filehandle;
+	my $jsonstring;
+	my $jsonobject;
+	$filename = shift;
+	$filename = validatefilename($filename);
+	if (! -f $filename) {
+		die "E: did you mean add";
+	}
+	open($filehandle, "<" . $filename);
+	$jsonstring = "";
+	while (<$filehandle>) {
+		$jsonstring .= $_;
+	}
+	close($filehandle);
+	$jsonobject = decode_json($jsonstring);
+	untag($jsonobject->{'tags'}, $filename);
+	unlink($filename);
 }
 
 sub validaterepourl {
@@ -338,7 +359,11 @@ if ($ARGV[0] eq "init") {
 						} else {
 							if ($ARGV[0] eq "search") {
 							} else {
-								usage();
+								if ($ARGV[0] eq "remove") {
+									remove($ARGV[1]);
+								} else {
+									usage();
+								}
 							}
 						}
 					}

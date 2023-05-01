@@ -199,7 +199,7 @@ if (! -d $ENV{'HOME'} . "/.bookkeepr/bookmarks") {
 }
 if ($ARGV[0] eq "add") {
 	if (defined($ARGV[1])) {
-		add($ARGV[1])
+		add($ARGV[1]);
 	} else {
 		print "E: no URL specified\n";
 	}

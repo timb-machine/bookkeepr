@@ -13,13 +13,14 @@ sub usage {
 }
 
 sub add {
-	my $url = shift;
+	my $url;
 	my $entryname;
 	my @entrytaglist;
 	my $filename;
 	my %jsonobject;
 	my $filehandle;
 	my $taglist;
+	$url = shift;
 	$entryname = $url;
 	$filename = sanitizefilename($entryname);
 	$filename = $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $filename;
@@ -39,11 +40,12 @@ sub add {
 }
 
 sub edit {
-	my $filename = shift;
+	my $filename;
 	my $filehandle;
 	my $jsonstring;
 	my $jsonobject;
 	my $taglist;
+	$filename = shift;
 	if (! -f $filename) {
 		print "E: did you mean add\n";
 	}
@@ -60,7 +62,8 @@ sub edit {
 }
 
 sub sanitizefilename {
-	my $filename = shift;
+	my $filename;
+	$filename = shift;
 	$filename =~ s/[\-\+\.\?\\\(\)\[\]\{\}\|\/\$`"':;,!# ]/_/g;
 	$filename = substr($filename, 0, 250);
 	return $filename;
@@ -147,10 +150,12 @@ sub textedit {
 }
 
 sub tag {
-	my $taglist = shift;
-	my $filename = shift;
+	my $taglist;
+	my $filename;
 	my $taggedcounter;
 	my $entrytag;
+	$taglist = shift;
+	$filename = shift;
 	$taggedcounter = 0;
 	foreach $entrytag (split(/, /, $taglist)) {
 		if (! -d $ENV{'HOME'} . "/.bookkeepr/" . $entrytag) {
@@ -165,10 +170,12 @@ sub tag {
 }
 
 sub untag {
-	my $taglist = shift;
-	my $filename = shift;
+	my $taglist;
+	my $filename;
 	my $taggedcounter;
 	my $entrytag;
+	$taglist = shift;
+	$filename = shift;
 	$taggedcounter = 0;
 	foreach $entrytag (split(/, /, $taglist)) {
 		unlink($ENV{'HOME'} . "/.bookkeepr/" . $entrytag . "/" . basename($filename));

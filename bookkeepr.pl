@@ -200,7 +200,7 @@ sub validateurl {
 sub validatefilename {
 	my $filename;
 	$filename = shift;
-	if ($filename =~ /([\/A-Za-z0-9\-_\.]+)/) {
+	if ($filename =~ /([\/A-Za-z0-9\-_\.:;&@]+)/) {
 		$filename = $1;
 	} else {
 		die "E: invalid filename";
@@ -211,7 +211,7 @@ sub validatefilename {
 sub sanitizefilename {
 	my $filename;
 	$filename = shift;
-	$filename =~ s/[\-\+\.\?\\\(\)\[\]\{\}\|\/\$`"':;,!# ]/_/g;
+	$filename =~ s/[^A-Za-z0-9\-_\.:;&@]/_/g;
 	$filename = substr($filename, 0, 250);
 	return $filename;
 }

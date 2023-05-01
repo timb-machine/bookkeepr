@@ -30,7 +30,7 @@ sub add {
 		$jsonobject{'url'} = $url;
 		@entrytaglist = classifyname($entryname, $modeljsonobject);
 		$jsonobject{'name'} = $entryname;
-		$jsonobject{'tags'} = join(", ", @entrytaglist);;
+		$jsonobject{'tags'} = join(", ", @entrytaglist);
 		open($filehandle, ">" . $filename);
 		print $filehandle to_json(\%jsonobject, {utf8 => 1, pretty => 1});
 		close($filehandle);

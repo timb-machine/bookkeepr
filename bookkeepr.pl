@@ -4,9 +4,9 @@ use strict;
 use JSON;
 use File::Basename;
 
+my $modeljsonobject;
 my $modelfilehandle;
 my $modeljsonstring;
-my $modeljsonobject;
 
 sub usage {
 	die "usage: " . basename($0) . " init <reponame>|subscribe <repourl> <reponame>|sync|<add|edit|tag|list|search> <reponame> [<..>]";
@@ -44,9 +44,9 @@ sub add {
 	my $reponame;
 	my $url;
 	my $entryname;
-	my @entrytaglist;
 	my $filename;
 	my %jsonobject;
+	my @entrytaglist;
 	my $filehandle;
 	my $taglist;
 	$reponame = shift;
@@ -158,13 +158,13 @@ sub sanitizename {
 sub classifyname {
 	my $entryname;
 	my $modeljsonobject;
-	my %similartaglist;
 	my $modeltag;
 	my @wordlist;
 	my $wordcounter;
-	my @toptaglist;
+	my %similartaglist;
 	my $taggedcounter;
 	my $similartag;
+	my @toptaglist;
 	$entryname = shift;
 	$modeljsonobject = shift;
 	$entryname = sanitizename($entryname);
@@ -194,10 +194,9 @@ sub textedit {
 	my $filehandle;
 	my $jsonstring;
 	my $jsonobject;
+	my $entryname;
 	my $reponame;
 	my $newfilename;
-	my $entryname;
-	my $taggedcounter;
 	$filename = shift;
 	$filename = validatefilename($filename);
 	open($filehandle, "<" . $filename);

@@ -186,11 +186,14 @@ sub untag {
 	}
 }
 
-if (@ARGV < 2) {
-	usage();
-}
 if (! -d $ENV{'HOME'} . "/.bookkeepr") {
 	mkdir($ENV{'HOME'} . "/.bookkeepr");
+}
+if (! -d $ENV{'HOME'} . "/.bookkeepr/bookmarks") {
+	mkdir($ENV{'HOME'} . "/.bookkeepr/bookmarks");
+}
+if (@ARGV < 2) {
+	usage();
 }
 if (-f $ENV{'HOME'} . "/.bookkeepr/model.json") {
 	open($modelfilehandle, "<" . $ENV{'HOME'} . "/.bookkeepr/model.json");
@@ -200,9 +203,6 @@ if (-f $ENV{'HOME'} . "/.bookkeepr/model.json") {
 	}
 	close($modelfilehandle);
 	$modeljsonobject = decode_json($modeljsonstring);
-}
-if (! -d $ENV{'HOME'} . "/.bookkeepr/bookmarks") {
-	mkdir($ENV{'HOME'} . "/.bookkeepr/bookmarks");
 }
 if ($ARGV[0] eq "add") {
 	if (defined($ARGV[1])) {

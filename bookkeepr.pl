@@ -64,7 +64,7 @@ sub sync {
 	for $directorypath (glob($ENV{'HOME'} . "/.bookkeepr/bookmarks/*")) {
 		$directorypath = validatefilename($directorypath);
 		for $filename (glob($directorypath . "/*")) {
-			open($filehandle, "<" . $filename);
+			open($filehandle, "<", $filename);
 			$jsonstring = "";
 			while (<$filehandle>) {
 				$jsonstring .= $_;
@@ -76,7 +76,7 @@ sub sync {
 		system("git", "pull", $directorypath);
 		system("git", "push", $directorypath);
 		for $filename (glob($directorypath . "/*")) {
-			open($filehandle, "<" . $filename);
+			open($filehandle, "<", $filename);
 			$jsonstring = "";
 			while (<$filehandle>) {
 				$jsonstring .= $_;
@@ -112,7 +112,7 @@ sub add {
 		@entrytaglist = classifyname($entryname, $modeljsonobject);
 		$jsonobject->{'name'} = $entryname;
 		$jsonobject->{'tags'} = join(", ", @entrytaglist);
-		open($filehandle, ">" . $filename);
+		open($filehandle, ">", $filename);
 		print $filehandle to_json($jsonobject, {utf8 => 1, pretty => 1});
 		close($filehandle);
 	}
@@ -131,7 +131,7 @@ sub edit {
 	if (! -f $filename) {
 		die "E: did you mean add";
 	}
-	open($filehandle, "<" . $filename);
+	open($filehandle, "<", $filename);
 	$jsonstring = "";
 	while (<$filehandle>) {
 		$jsonstring .= $_;
@@ -153,7 +153,7 @@ sub remove {
 	if (! -f $filename) {
 		die "E: did you mean add";
 	}
-	open($filehandle, "<" . $filename);
+	open($filehandle, "<", $filename);
 	$jsonstring = "";
 	while (<$filehandle>) {
 		$jsonstring .= $_;
@@ -269,7 +269,7 @@ sub textedit {
 	my $newfilename;
 	$filename = shift;
 	$filename = validatefilename($filename);
-	open($filehandle, "<" . $filename);
+	open($filehandle, "<", $filename);
 	$jsonstring = "";
 	while (<$filehandle>) {
 		$jsonstring .= $_;
@@ -282,7 +282,7 @@ sub textedit {
 	} else {
 		system("vi", $filename);
 	}
-	open($filehandle, "<" . $filename);
+	open($filehandle, "<", $filename);
 	$jsonstring = "";
 	while (<$filehandle>) {
 		$jsonstring .= $_;
@@ -362,6 +362,7 @@ sub untag {
 	}
 }
 
+binmode STDOUT, ':encoding(UTF-8)';
 if ($ENV{'HOME'} =~ /(.*)/) {
 	$ENV{'HOME'} = $1;
 }
@@ -395,7 +396,7 @@ if ($ARGV[0] eq "init") {
 			sync();
 		} else {
 			if (-f $ENV{'HOME'} . "/.bookkeepr/model.json") {
-				open($modelfilehandle, "<" . $ENV{'HOME'} . "/.bookkeepr/model.json");
+				open($modelfilehandle, "<", $ENV{'HOME'} . "/.bookkeepr/model.json");
 				$modeljsonstring = "";
 				while (<$modelfilehandle>) {
 					$modeljsonstring .= $_;

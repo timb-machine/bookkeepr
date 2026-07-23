@@ -42,12 +42,18 @@ my %weightings;
 my $modeltag;
 my $bigram;
 
+if ($ENV{'HOME'} =~ /(.*)/) {
+        $ENV{'HOME'} = $1;
+}
+if ($ENV{'PATH'} =~ /(.*)/) {
+        $ENV{'PATH'} = $1;
+}
 if (! -d $ENV{'HOME'} . "/.bookkeepr" ) {
 	mkdir($ENV{'HOME'} . "/.bookkeepr");
 }
 if (defined($ARGV[0])) {
 	if (-f $ARGV[0]) {
-		open($filehandle, "<" . $ARGV[0]);
+		open($filehandle, "<", $ARGV[0]);
 		$jsonstring = "";
 		while (<$filehandle>) {
 			$jsonstring .= $_;
@@ -79,11 +85,11 @@ if (defined($ARGV[0])) {
 			}
 		}
 		foreach $modeltag (keys %{$model{'tags'}}) {
-			foreach $bigram (keys %{$model{'tags'}{$tag}}) {
-				$model{'tags'}{$tag}{$bigram}{'weight'} = $weightings{$bigram};
+			foreach $bigram (keys %{$model{'tags'}{$modeltag}}) {
+				$model{'tags'}{$modeltag}{$bigram}{'weight'} = $weightings{$bigram};
 			}
 		}
-		open($filehandle, ">" . $ENV{'HOME'} . "/.bookkeepr/model.json");
+		open($filehandle, ">", $ENV{'HOME'} . "/.bookkeepr/model.json");
 		print $filehandle to_json(\%model, {utf8 => 1, pretty => 1});
 		close($filehandle);
 	}

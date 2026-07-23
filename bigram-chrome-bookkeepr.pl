@@ -85,7 +85,7 @@ sub parseentry {
 	if (-f $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $reponame . "/" . $sanitizedtitle) {
 		print "W: " . $sanitizedtitle . " is a duplicate\n";
 	} else {
-		open($filehandle, ">" . $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $reponame . "/" . $sanitizedtitle);
+		open($filehandle, ">", $ENV{'HOME'} . "/.bookkeepr/bookmarks/" . $reponame . "/" . $sanitizedtitle);
 		print $filehandle to_json(\%newentryobject, {utf8 => 1, pretty => 1});
 		close($filehandle);
 		foreach $entrytag (@entrytaglist) {
@@ -136,11 +136,17 @@ sub classifytitle {
 	return @toptaglist;
 }
 
+if ($ENV{'HOME'} =~ /(.*)/) {
+        $ENV{'HOME'} = $1;
+}
+if ($ENV{'PATH'} =~ /(.*)/) {
+        $ENV{'PATH'} = $1;
+}
 if (! -d $ENV{'HOME'} . "/.bookkeepr") {
 	mkdir($ENV{'HOME'} . "/.bookkeepr");
 }
 if (-f $ENV{'HOME'} . "/.bookkeepr/model.json") {
-	open($modelfilehandle, "<" . $ENV{'HOME'} . "/.bookkeepr/model.json");
+	open($modelfilehandle, "<", $ENV{'HOME'} . "/.bookkeepr/model.json");
 	$modeljsonstring = "";
 	while (<$modelfilehandle>) {
 		$modeljsonstring .= $_;
@@ -150,7 +156,7 @@ if (-f $ENV{'HOME'} . "/.bookkeepr/model.json") {
 }
 if (defined($ARGV[0])) {
 	if (-f $ARGV[0]) {
-		open($bookmarksfilehandle, "<" . $ARGV[0]);
+		open($bookmarksfilehandle, "<", $ARGV[0]);
 		$bookmarksjsonstring = "";
 		while (<$bookmarksfilehandle>) {
 			$bookmarksjsonstring .= $_;
